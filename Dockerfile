@@ -38,7 +38,7 @@ WORKDIR /build
 
 # Copia apenas arquivos necessários para composer (otimização de cache)
 # Se composer.json não mudar, esta camada pode ser reutilizada
-COPY composer.json composer.lock* ./
+COPY site_php/composer.json site_php/composer.lock* ./
 
 # Instala dependências PHP sem arquivos de desenvolvimento
 # --no-dev: exclui dependências de desenvolvimento
@@ -261,7 +261,10 @@ COPY --from=builder /build/vendor ./vendor
 
 # Copia código da aplicação
 # Feito por último para maximizar reutilização de cache
-COPY --chown=appuser:appuser . .
+COPY --chown=appuser:appuser site_php/ .
+
+# Copia assets estáticos (CSS, JS, imagens)
+COPY --chown=appuser:appuser assets/ ./assets/
 
 # Cria diretório de logs da aplicação com permissões corretas
 RUN mkdir -p logs && chown -R appuser:appuser logs
