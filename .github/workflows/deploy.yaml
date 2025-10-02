@@ -42,12 +42,12 @@ jobs:
       - name: Show deployment variables
         run: |
           echo "Public IP: $PUBLIC_IP"
-          echo "Key length: $(echo -n "$INSTANCE_KEY" | wc -c)"
+          echo "Key length: $(echo -n \"$INSTANCE_KEY\" | wc -c)"
 
       - name: Test SSH port connectivity
-        run: |
-          apt-get update && apt-get install -y netcat
-          nc -zv $PUBLIC_IP 22
+        uses: docker://alpine
+        with:
+          args: sh -c "apk add --no-cache netcat-openbsd && nc -zv ${{ env.PUBLIC_IP }} 22"
 
       - name: Deploy EC2 ssh
         run: |
