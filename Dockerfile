@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1
 # ==============================================================================
 # DOCKERFILE MULTI-STAGE PARA APLICAÇÃO PHP
 # ==============================================================================
@@ -119,7 +120,7 @@ RUN mkdir -p \
     && chown -R appuser:appuser /var/lib/nginx/tmp
 
 # Configuração do Nginx otimizada para aplicações PHP
-RUN cat > /etc/nginx/nginx.conf << 'EOF'
+RUN cat > /etc/nginx/nginx.conf <<'EOF'
 user appuser;
 worker_processes auto;
 error_log /var/log/nginx/error.log warn;
@@ -134,26 +135,26 @@ events {
 http {
     include /etc/nginx/mime.types;
     default_type application/octet-stream;
-    
+
     # Logging
     log_format main '$remote_addr - $remote_user [$time_local] "$request" '
                     '$status $body_bytes_sent "$http_referer" '
                     '"$http_user_agent" "$http_x_forwarded_for"';
     access_log /var/log/nginx/access.log main;
-    
+
     # Performance
     sendfile on;
     tcp_nopush on;
     tcp_nodelay on;
     keepalive_timeout 65;
     types_hash_max_size 2048;
-    
+
     # Security headers
     add_header X-Frame-Options DENY;
     add_header X-Content-Type-Options nosniff;
     add_header X-XSS-Protection "1; mode=block";
     add_header Referrer-Policy strict-origin-when-cross-origin;
-    
+
     # Gzip compression
     gzip on;
     gzip_vary on;
@@ -167,52 +168,52 @@ http {
         application/javascript
         application/xml+rss
         application/atom+xml;
-    
+
     server {
         listen 8080;
         server_name _;
         root /var/www/html;
         index index.php index.html;
-        
+
         # Security: oculta versão do servidor
         server_tokens off;
-        
+
         # Health check endpoint para load balancers
         location /health {
             try_files $uri $uri/ /health.php?$query_string;
         }
-        
+
         # Roteamento principal para PHP
         location / {
             try_files $uri $uri/ /index.php?$query_string;
         }
-        
+
         # Processamento de arquivos PHP
         location ~ \.php$ {
             include fastcgi.conf;
             fastcgi_pass 127.0.0.1:9000;
             fastcgi_index index.php;
             fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-            
+
             # Timeout settings
             fastcgi_connect_timeout 60s;
             fastcgi_send_timeout 60s;
             fastcgi_read_timeout 60s;
         }
-        
+
         # Nega acesso a arquivos sensíveis
         location ~ /\. {
             deny all;
             access_log off;
             log_not_found off;
         }
-        
+
         location ~ /composer\.(json|lock) {
             deny all;
             access_log off;
             log_not_found off;
         }
-        
+
         # Cache estático otimizado
         location ~* \.(jpg|jpeg|gif|png|css|js|ico|svg|woff|woff2|ttf|eot)$ {
             expires 1y;
@@ -281,12 +282,12 @@ CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
 
 # ==============================================================================
 # NOTAS DE IMPLEMENTAÇÃO:
-# 
+#
 # 1. MULTI-STAGE BUILDS:
 #    - Stage 1 (builder): Instala composer e dependências
 #    - Stage 2 (runtime): Imagem final otimizada só com necessário para produção
 #    - Reduz tamanho final da imagem em ~60-70%
-# 
+#
 # 2. SEGURANÇA:
 #    - Supervisor roda como root (necessário para gerenciar processos)
 #    - Nginx e PHP-FPM rodam como appuser (princípio de menor privilégio)
@@ -294,17 +295,17 @@ CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
 #    - Headers de segurança configurados
 #    - Arquivos sensíveis protegidos
 #    - PHP configurado com práticas seguras
-# 
+#
 # 3. PERFORMANCE:
 #    - OPcache configurado para máxima performance
 #    - Nginx otimizado com gzip, cache, keep-alive
 #    - Supervisor para gerenciar processos eficientemente
-# 
+#
 # 4. OBSERVABILIDADE:
 #    - Health check endpoint configurado
 #    - Logs estruturados para nginx, php-fpm e supervisor
 #    - Métricas disponíveis via /health endpoint
-# 
+#
 # 5. PRODUÇÃO-READY:
 #    - Configurações otimizadas para alta carga
 #    - Timeouts apropriados
