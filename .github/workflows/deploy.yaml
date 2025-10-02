@@ -10,36 +10,45 @@ permissions:
   contents: read
 
 jobs:
-  job1:
+  build_ecr:
     name: build_ecr
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v2
         with:
           role-to-assume: arn:aws:iam::975050217683:role/GitHubActionRepoApp
           aws-region: us-east-1
 
-      - name: Amazon ECR "Login" Action for GitHub Actions
-        uses: aws-actions/amazon-ecr-login@v2.0.1
-
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v1
 
       - name: Build, Tag and Push
         run: |
           docker build -t devops-test-project:v1.0.0 .
           docker tag devops-test-project:v1.0.0 975050217683.dkr.ecr.us-east-1.amazonaws.com/devops:v1.0.0
           docker push 975050217683.dkr.ecr.us-east-1.amazonaws.com/devops:v1.0.0
-  job2:
+
+  deploy_ec2:
     name: deploy_ec2
     env:
       INSTANCE_KEY: ${{ secrets.INSTANCE_KEY }}
       PUBLIC_IP: ${{ secrets.PUBLIC_IP }}
     runs-on: ubuntu-latest
     steps:
+      - name: Show deployment variables
+        run: |
+          echo "Public IP: $PUBLIC_IP"
+          echo "Key length: $(echo -n "$INSTANCE_KEY" | wc -c)"
+
+      - name: Test SSH port connectivity
+        run: |
+          apt-get update && apt-get install -y netcat
+          nc -zv $PUBLIC_IP 22
+
       - name: Deploy EC2 ssh
         run: |
           echo "$INSTANCE_KEY" > bia.pem
@@ -52,10 +61,4 @@ jobs:
           EOF
           rm bia.pem
 
-
- 
-
-
-
-    
-    
+// ... existing code ...
