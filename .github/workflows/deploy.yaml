@@ -1,4 +1,4 @@
-name: Pipeline CI/CD
+name: CI/CD Pipeline
 
 on:
   push:
@@ -10,81 +10,68 @@ permissions:
   contents: read
 
 jobs:
-  build_ecr:
-    name: build_ecr
+  build:
+    name: Build e Push para ECR
     runs-on: ubuntu-latest
+    
     steps:
-      - name: Checkout
+      - name: Checkout do código
         uses: actions/checkout@v4
 
-      - name: Configure AWS Credentials
+      - name: Configurar credenciais AWS
         uses: aws-actions/configure-aws-credentials@v2
         with:
           role-to-assume: arn:aws:iam::975050217683:role/GitHubActionRepoApp
           aws-region: us-east-1
 
-      - name: Login to Amazon ECR
+      - name: Login no Amazon ECR
         uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Build, Tag and Push
+      - name: Build e push da imagem
         run: |
           docker build -t devops:v1.0.0 .
-          # Cria tags v1.0.0 e latest no repositório "devops"
           docker tag devops:v1.0.0 975050217683.dkr.ecr.us-east-1.amazonaws.com/devops:v1.0.0
           docker tag devops:v1.0.0 975050217683.dkr.ecr.us-east-1.amazonaws.com/devops:latest
           docker push 975050217683.dkr.ecr.us-east-1.amazonaws.com/devops:v1.0.0
           docker push 975050217683.dkr.ecr.us-east-1.amazonaws.com/devops:latest
 
-  deploy_ec2:
-    name: deploy_ec2
-    needs: build_ecr
+  deploy:
+    name: Deploy em EC2
+    needs: build
     runs-on: ubuntu-latest
+    
     steps:
-      - name: Configure AWS Credentials
+      - name: Configurar credenciais AWS
         uses: aws-actions/configure-aws-credentials@v2
         with:
           role-to-assume: arn:aws:iam::975050217683:role/GitHubActionRepoApp
           aws-region: us-east-1
 
-      - name: Create SSH key file
+      - name: Criar arquivo de chave SSH
         run: |
-          echo "${{ secrets.INSTANCE_KEY }}" > bia.pem
-          chmod 600 bia.pem
+          echo "${{ secrets.INSTANCE_KEY }}" > key.pem
+          chmod 600 key.pem
 
-      - name: Show deployment info
+      - name: Deploy na instância EC2
         run: |
-          echo "Public IP: ${{ secrets.PUBLIC_IP }}"
-          echo "Key configured: $(test -f bia.pem && echo 'YES' || echo 'NO')"
-
-      - name: Test SSH connection
-        run: |
-          ssh -o BatchMode=yes -o ConnectTimeout=10 -o StrictHostKeyChecking=no -i bia.pem ec2-user@${{ secrets.PUBLIC_IP }} echo 'SSH connection successful'
-
-      - name: Deploy to EC2
-        run: |
-          ssh -i bia.pem -o StrictHostKeyChecking=no ec2-user@${{ secrets.PUBLIC_IP }} << 'EOF'
+          ssh -i key.pem -o StrictHostKeyChecking=no ec2-user@${{ secrets.PUBLIC_IP }} << 'DEPLOY_EOF'
             set -e
-
-            echo "🔐 Login no Amazon ECR..."
-            aws ecr get-login-password --region us-east-1 | sudo docker login --username AWS --password-stdin 975050217683.dkr.ecr.us-east-1.amazonaws.com
-
-            echo "📥 Baixando imagem do ECR..."
+            
+            aws ecr get-login-password --region us-east-1 | \
+              sudo docker login --username AWS --password-stdin 975050217683.dkr.ecr.us-east-1.amazonaws.com
+            
             sudo docker pull 975050217683.dkr.ecr.us-east-1.amazonaws.com/devops:v1.0.0
-
-            echo "🧹 Removendo container antigo (se existir)..."
             sudo docker rm -f devops-app 2>/dev/null || true
-
-            echo "🚀 Subindo novo container..."
+            
             sudo docker run -d \
               --name devops-app \
               --restart unless-stopped \
               -p 80:8080 \
               975050217683.dkr.ecr.us-east-1.amazonaws.com/devops:v1.0.0
-
-            echo "✅ Deploy concluído!"
+            
             sudo docker ps
-          EOF
+          DEPLOY_EOF
 
-      - name: Cleanup
+      - name: Limpeza
         if: always()
-        run: rm -f bia.pem
+        run: rm -f key.pem
