@@ -18,6 +18,21 @@ body {
     padding: 0 20px;
 }
 
+/* Alteração para teste no deploy: mudar a cor do botão para vermelho */
+button {
+    background-color: #FF0000 !important; /* vermelho */
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #cc0000;
+}
+}
+
 /* Alteração para testar o deploy.yaml: mudar a cor do botão para azul */
 button {
     background-color: #007BFF; /* azul */
