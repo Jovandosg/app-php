@@ -35,6 +35,29 @@ jobs:
           docker push 975050217683.dkr.ecr.us-east-1.amazonaws.com/devops:v1.0.0
           
 
+  job2:
+    name: deploy_ec2
+    env:
+       
+      
+    runs-on: ubuntu-latest
+      steps: 
+       - name: Deploy EC2 ssh
+         env:
+           INTANCE_KEY: ${{secrets.INSTANCE_key}}
+           PUBLIC_IP: ${{secrets.PUBLIC_IP}}
+         run: |
+            echo "$INSTANCE_KEY" > bia.pem
+            ssh -i bia.pem ec2_user@$PUBLIC_IP << EOF
+              aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 975050217683.dkr.ecr.us-east-1.amazonaws.com
+              docker pull 975050217683.dkr.ecr.us-east-1.amazonaws.com/devops:v1.0.0
+              docker run -d -p 80:80 --name site 975050217683.dkr.ecr.us-east-1.amazonaws.com/devops:v1.0.0
+              docker ps
+          EOF
+          rm chave-bia.pem
+
+
+ 
 
 
 
