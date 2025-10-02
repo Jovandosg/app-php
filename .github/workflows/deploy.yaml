@@ -28,40 +28,63 @@ jobs:
 
       - name: Build, Tag and Push
         run: |
-          docker build -t devops-test-project:v1.0.0 .
-          docker tag devops-test-project:v1.0.0 975050217683.dkr.ecr.us-east-1.amazonaws.com/devops:v1.0.0
+          docker build -t devops:v1.0.0 .
+          # Cria tags v1.0.0 e latest no repositório "devops"
+          docker tag devops:v1.0.0 975050217683.dkr.ecr.us-east-1.amazonaws.com/devops:v1.0.0
+          docker tag devops:v1.0.0 975050217683.dkr.ecr.us-east-1.amazonaws.com/devops:latest
           docker push 975050217683.dkr.ecr.us-east-1.amazonaws.com/devops:v1.0.0
+          docker push 975050217683.dkr.ecr.us-east-1.amazonaws.com/devops:latest
 
   deploy_ec2:
     name: deploy_ec2
     needs: build_ecr
-    env:
-      INSTANCE_KEY: ${{ secrets.INSTANCE_KEY }}
-      PUBLIC_IP: ${{ secrets.PUBLIC_IP }}
     runs-on: ubuntu-latest
     steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: arn:aws:iam::975050217683:role/GitHubActionRepoApp
+          aws-region: us-east-1
+
       - name: Create SSH key file
         run: |
-          echo "$INSTANCE_KEY" > bia.pem
+          echo "${{ secrets.INSTANCE_KEY }}" > bia.pem
           chmod 600 bia.pem
 
-      - name: Show deployment variables
+      - name: Show deployment info
         run: |
-          echo "Public IP: $PUBLIC_IP"
-          echo "Key length: $(echo -n \"$INSTANCE_KEY\" | wc -c)"
+          echo "Public IP: ${{ secrets.PUBLIC_IP }}"
+          echo "Key configured: $(test -f bia.pem && echo 'YES' || echo 'NO')"
 
-      - name: Debug deployment variables
+      - name: Test SSH connection
         run: |
-          echo "Public IP: $PUBLIC_IP"
-          echo "Key length: $(echo -n \"$INSTANCE_KEY\" | wc -c)"
-          ssh -o BatchMode=yes -o ConnectTimeout=5 -o StrictHostKeyChecking=no -i bia.pem ec2-user@$PUBLIC_IP echo 'SSH connection test'
+          ssh -o BatchMode=yes -o ConnectTimeout=10 -o StrictHostKeyChecking=no -i bia.pem ec2-user@${{ secrets.PUBLIC_IP }} echo 'SSH connection successful'
 
-      - name: Deploy EC2 ssh
+      - name: Deploy to EC2
         run: |
-          ssh -i bia.pem -o StrictHostKeyChecking=no ec2-user@$PUBLIC_IP << EOF
-            aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 975050217683.dkr.ecr.us-east-1.amazonaws.com
-            docker pull 975050217683.dkr.ecr.us-east-1.amazonaws.com/devops:v1.0.0
-            docker run -d -p 80:80 --name site 975050217683.dkr.ecr.us-east-1.amazonaws.com/devops:v1.0.0 || docker restart site
-            docker ps
+          ssh -i bia.pem -o StrictHostKeyChecking=no ec2-user@${{ secrets.PUBLIC_IP }} << 'EOF'
+            set -e
+
+            echo "🔐 Login no Amazon ECR..."
+            aws ecr get-login-password --region us-east-1 | sudo docker login --username AWS --password-stdin 975050217683.dkr.ecr.us-east-1.amazonaws.com
+
+            echo "📥 Baixando imagem do ECR..."
+            sudo docker pull 975050217683.dkr.ecr.us-east-1.amazonaws.com/devops:v1.0.0
+
+            echo "🧹 Removendo container antigo (se existir)..."
+            sudo docker rm -f devops-app 2>/dev/null || true
+
+            echo "🚀 Subindo novo container..."
+            sudo docker run -d \
+              --name devops-app \
+              --restart unless-stopped \
+              -p 80:8080 \
+              975050217683.dkr.ecr.us-east-1.amazonaws.com/devops:v1.0.0
+
+            echo "✅ Deploy concluído!"
+            sudo docker ps
           EOF
-          rm bia.pem
+
+      - name: Cleanup
+        if: always()
+        run: rm -f bia.pem
