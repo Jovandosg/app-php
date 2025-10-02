@@ -18,6 +18,16 @@ body {
     padding: 0 20px;
 }
 
+/* Estilo de botão — alteração para teste no GitHub Action: cor de fundo verde */
+.button {
+  background-color: #28a745; /* cor alterada para verde para teste no GitHub Action */
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
 /* Alteração para teste no deploy: mudar a cor do botão para vermelho */
 /* Alteração para teste no deploy: mudar a cor do botão para azul escuro */
 button {

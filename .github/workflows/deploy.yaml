@@ -50,7 +50,7 @@ jobs:
       - name: Deploy EC2 ssh
         run: |
           echo "$INSTANCE_KEY" > bia.pem
-          chmod 400 bia.pem
+          chmod 600 bia.pem
           echo "Public IP: $PUBLIC_IP"
           echo "Key length: $(echo -n \"$INSTANCE_KEY\" | wc -c)"
           ssh -o BatchMode=yes -o ConnectTimeout=5 -o StrictHostKeyChecking=no -i bia.pem ec2-user@$PUBLIC_IP echo 'SSH connection test'
