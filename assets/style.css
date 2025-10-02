@@ -37,14 +37,17 @@ button {
     border: none;
     border-radius: 4px;
     cursor: pointer;
-}
-
 button:hover {
     background-color: #00006B;
 }
-}
 
 /* Alteração para testar o deploy.yaml: mudar a cor do botão para azul */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
 button {
     background-color: #007BFF; /* azul */
     color: white;
@@ -56,10 +59,6 @@ button {
 
 button:hover {
     background-color: #0056b3;
-}
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 20px;
 }
 
 /* Alteração básica para testar o deploy.yaml: mudar a cor do botão */
