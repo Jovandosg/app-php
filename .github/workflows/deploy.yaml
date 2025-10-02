@@ -44,11 +44,7 @@ jobs:
           echo "Public IP: $PUBLIC_IP"
           echo "Key length: $(echo -n \"$INSTANCE_KEY\" | wc -c)"
 
-      - name: Test SSH port connectivity
-        # Temporariamente comentado para isolar problema
-        # uses: docker://alpine
-        # with:
-        #   args: sh -c "apk add --no-cache netcat-openbsd && nc -zv -w 10 ${{ env.PUBLIC_IP }} 22"
+
 
       - name: Deploy EC2 ssh
         run: |
