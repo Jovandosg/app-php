@@ -29,6 +29,10 @@ jobs:
       - name: Build, Tag and Push
         run: |
           docker build -t devops:v1.0.0 .
+<<<<<<< HEAD
+=======
+          # Cria tags v1.0.0 e latest no repositório "devops"
+>>>>>>> a524859aaec3ad927e0be383183a70ebbfb47349
           docker tag devops:v1.0.0 975050217683.dkr.ecr.us-east-1.amazonaws.com/devops:v1.0.0
           docker tag devops:v1.0.0 975050217683.dkr.ecr.us-east-1.amazonaws.com/devops:latest
           docker push 975050217683.dkr.ecr.us-east-1.amazonaws.com/devops:v1.0.0
@@ -59,6 +63,7 @@ jobs:
         run: |
           ssh -o BatchMode=yes -o ConnectTimeout=10 -o StrictHostKeyChecking=no -i bia.pem ec2-user@${{ secrets.PUBLIC_IP }} echo 'SSH connection successful'
 
+<<<<<<< HEAD
       - name: Run Troubleshooting on EC2
         run: |
           ssh -i bia.pem -o StrictHostKeyChecking=no ec2-user@${{ secrets.PUBLIC_IP }} << 'EOF'
@@ -121,6 +126,8 @@ jobs:
             echo -e "\n✅ Troubleshooting concluído com sucesso!"
           EOF
 
+=======
+>>>>>>> a524859aaec3ad927e0be383183a70ebbfb47349
       - name: Deploy to EC2
         run: |
           ssh -i bia.pem -o StrictHostKeyChecking=no ec2-user@${{ secrets.PUBLIC_IP }} << 'EOF'
@@ -144,6 +151,7 @@ jobs:
 
             echo "✅ Deploy concluído!"
             sudo docker ps
+<<<<<<< HEAD
             
             echo -e "\n🌍 Aplicação disponível em: http://$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4)"
           EOF
@@ -159,8 +167,14 @@ jobs:
               echo "⚠ Aplicação pode não estar respondendo corretamente"
               sudo docker logs devops-app --tail 50
             fi
+=======
+>>>>>>> a524859aaec3ad927e0be383183a70ebbfb47349
           EOF
 
       - name: Cleanup
         if: always()
+<<<<<<< HEAD
         run: rm -f bia.pem
+=======
+        run: rm -f bia.pem
+>>>>>>> a524859aaec3ad927e0be383183a70ebbfb47349
