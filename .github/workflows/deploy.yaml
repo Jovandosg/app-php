@@ -29,10 +29,7 @@ jobs:
       - name: Build, Tag and Push
         run: |
           docker build -t devops:v1.0.0 .
-<<<<<<< HEAD
-=======
           # Cria tags v1.0.0 e latest no repositório "devops"
->>>>>>> a524859aaec3ad927e0be383183a70ebbfb47349
           docker tag devops:v1.0.0 975050217683.dkr.ecr.us-east-1.amazonaws.com/devops:v1.0.0
           docker tag devops:v1.0.0 975050217683.dkr.ecr.us-east-1.amazonaws.com/devops:latest
           docker push 975050217683.dkr.ecr.us-east-1.amazonaws.com/devops:v1.0.0
@@ -63,71 +60,6 @@ jobs:
         run: |
           ssh -o BatchMode=yes -o ConnectTimeout=10 -o StrictHostKeyChecking=no -i bia.pem ec2-user@${{ secrets.PUBLIC_IP }} echo 'SSH connection successful'
 
-<<<<<<< HEAD
-      - name: Run Troubleshooting on EC2
-        run: |
-          ssh -i bia.pem -o StrictHostKeyChecking=no ec2-user@${{ secrets.PUBLIC_IP }} << 'EOF'
-            echo "🔎 Iniciando troubleshooting pré-deploy..."
-            
-            # 1. Verificar Docker
-            echo -e "\n--- [1] Docker Status ---"
-            if command -v docker &> /dev/null; then
-              echo "✔ Docker instalado"
-            else
-              echo "❌ Docker não encontrado"
-              exit 1
-            fi
-            
-            if sudo systemctl is-active --quiet docker; then
-              echo "✔ Docker service ativo"
-            else
-              echo "❌ Docker service NÃO está rodando"
-              exit 1
-            fi
-            
-            # 2. Verificar IAM Role
-            echo -e "\n--- [2] IAM Identity ---"
-            aws sts get-caller-identity || {
-              echo "❌ Falha ao obter identidade AWS"
-              exit 1
-            }
-            
-            # 3. Testar login no ECR
-            echo -e "\n--- [3] Login no Amazon ECR ---"
-            if aws ecr get-login-password --region us-east-1 | sudo docker login --username AWS --password-stdin 975050217683.dkr.ecr.us-east-1.amazonaws.com 2>&1 | grep -q "Login Succeeded"; then
-              echo "✔ Login no ECR OK"
-            else
-              echo "❌ Falha no login no ECR"
-              exit 1
-            fi
-            
-            # 4. Verificar conectividade com ECR
-            echo -e "\n--- [4] Conectividade ECR ---"
-            if aws ecr describe-repositories --repository-names devops --region us-east-1 &> /dev/null; then
-              echo "✔ Repositório 'devops' acessível"
-            else
-              echo "❌ Repositório 'devops' não encontrado ou sem permissão"
-              exit 1
-            fi
-            
-            # 5. Verificar porta 80 disponível
-            echo -e "\n--- [5] Porta 80 ---"
-            if sudo lsof -i :80 &> /dev/null; then
-              echo "⚠ Porta 80 já está em uso (container antigo será removido)"
-            else
-              echo "✔ Porta 80 disponível"
-            fi
-            
-            # 6. Mostrar IP público
-            echo -e "\n--- [6] IP Público ---"
-            PUBLIC_IP=$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4)
-            echo "IP: $PUBLIC_IP"
-            
-            echo -e "\n✅ Troubleshooting concluído com sucesso!"
-          EOF
-
-=======
->>>>>>> a524859aaec3ad927e0be383183a70ebbfb47349
       - name: Deploy to EC2
         run: |
           ssh -i bia.pem -o StrictHostKeyChecking=no ec2-user@${{ secrets.PUBLIC_IP }} << 'EOF'
@@ -151,30 +83,8 @@ jobs:
 
             echo "✅ Deploy concluído!"
             sudo docker ps
-<<<<<<< HEAD
-            
-            echo -e "\n🌍 Aplicação disponível em: http://$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4)"
-          EOF
-
-      - name: Verify Deployment
-        run: |
-          echo "🔍 Verificando se a aplicação está respondendo..."
-          sleep 5
-          ssh -i bia.pem -o StrictHostKeyChecking=no ec2-user@${{ secrets.PUBLIC_IP }} << 'EOF'
-            if curl -s -o /dev/null -w "%{http_code}" http://localhost | grep -q "200"; then
-              echo "✅ Aplicação respondendo corretamente na porta 80"
-            else
-              echo "⚠ Aplicação pode não estar respondendo corretamente"
-              sudo docker logs devops-app --tail 50
-            fi
-=======
->>>>>>> a524859aaec3ad927e0be383183a70ebbfb47349
           EOF
 
       - name: Cleanup
         if: always()
-<<<<<<< HEAD
         run: rm -f bia.pem
-=======
-        run: rm -f bia.pem
->>>>>>> a524859aaec3ad927e0be383183a70ebbfb47349
