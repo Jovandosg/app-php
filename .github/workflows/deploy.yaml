@@ -37,7 +37,6 @@ jobs:
     needs: build_ecr
     env:
       INSTANCE_KEY: ${{ secrets.INSTANCE_KEY }}
-      INSTANCE_KEY: ${{ secrets.INSTANCE_KEY }}
       PUBLIC_IP: ${{ secrets.PUBLIC_IP }}
     runs-on: ubuntu-latest
     steps:
