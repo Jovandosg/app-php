@@ -5,7 +5,6 @@ on:
     branches:
       - main
 
-
 permissions:
   id-token: write
   contents: read
@@ -35,6 +34,7 @@ jobs:
 
   deploy_ec2:
     name: deploy_ec2
+    needs: build_ecr
     env:
       INSTANCE_KEY: ${{ secrets.INSTANCE_KEY }}
       PUBLIC_IP: ${{ secrets.PUBLIC_IP }}
@@ -45,16 +45,16 @@ jobs:
           echo "Public IP: $PUBLIC_IP"
           echo "Key length: $(echo -n \"$INSTANCE_KEY\" | wc -c)"
 
-
+      - name: Debug deployment variables
+        run: |
+          echo "Public IP: $PUBLIC_IP"
+          echo "Key length: $(echo -n \"$INSTANCE_KEY\" | wc -c)"
+          ssh -o BatchMode=yes -o ConnectTimeout=5 -o StrictHostKeyChecking=no -i bia.pem ec2-user@$PUBLIC_IP echo 'SSH connection test'
 
       - name: Deploy EC2 ssh
         run: |
           echo "$INSTANCE_KEY" > bia.pem
           chmod 600 bia.pem
-          echo "Public IP: $PUBLIC_IP"
-          echo "Key length: $(echo -n \"$INSTANCE_KEY\" | wc -c)"
-          ssh -o BatchMode=yes -o ConnectTimeout=5 -o StrictHostKeyChecking=no -i bia.pem ec2-user@$PUBLIC_IP echo 'SSH connection test'
-
           ssh -i bia.pem -o StrictHostKeyChecking=no ec2-user@$PUBLIC_IP << EOF
             aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 975050217683.dkr.ecr.us-east-1.amazonaws.com
             docker pull 975050217683.dkr.ecr.us-east-1.amazonaws.com/devops:v1.0.0
