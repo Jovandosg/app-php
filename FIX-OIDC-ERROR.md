@@ -68,7 +68,7 @@ Crie um arquivo chamado `trust-policy.json` com este conteúdo:
           "token.actions.githubusercontent.com:aud": "sts.amazonaws.com"
         },
         "StringLike": {
-          "token.actions.githubusercontent.com:sub": "repo:Jovandosg/devops-test-project:ref:refs/heads/main"
+          "token.actions.githubusercontent.com:sub": "repo:Jovandosg/app-php:ref:refs/heads/main"
         }
       }
     }
@@ -122,6 +122,33 @@ aws iam put-role-policy \
   --role-name GitHubActionRepoApp \
   --policy-name ECRAccessPolicy \
   --policy-document file://ecr-policy.json
+
+#### 4.2. Criar arquivo trust-policy.json
+
+```bash
+cat > trust-policy.json << 'EOF'
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "Federated": "arn:aws:iam::975050217683:oidc-provider/token.actions.githubusercontent.com"
+      },
+      "Action": "sts:AssumeRoleWithWebIdentity",
+      "Condition": {
+        "StringEquals": {
+          "token.actions.githubusercontent.com:aud": "sts.amazonaws.com"
+        },
+        "StringLike": {
+          "token.actions.githubusercontent.com:sub": "repo:Jovandosg/app-php:ref:refs/heads/main"
+        }
+      }
+    }
+  ]
+}
+EOF
+```
 ```
 
 ---
@@ -151,6 +178,16 @@ Se preferir usar o console:
 2. Clique em **Add permissions > Create inline policy**
 3. Aba **JSON**
 4. Cole a política ECR do Passo 4 acima
+
+---
+
+## 🔍 Checklist de Verificação
+
+- [ ] OIDC Provider criado no IAM (`token.actions.githubusercontent.com`)
+- [ ] Trust Policy da role atualizada com `repo:Jovandosg/app-php:ref:refs/heads/main`
+- [ ] Permissões ECR anexadas à role
+- [ ] ARN da role correto no workflow: `arn:aws:iam::975050217683:role/GitHubActionRepoApp`
+- [ ] Repositório ECR existe: `975050217683.dkr.ecr.us-east-1.amazonaws.com/devops`
 5. Nome: `ECRAccessPolicy`
 6. Clique em **Create policy**
 
@@ -173,7 +210,7 @@ git push origin main
 ### Se ainda der erro, verifique:
 
 1. **Nome do repositório está correto?**
-   - Deve ser exatamente: `Jovandosg/devops-test-project`
+   - Deve ser exatamente: `Jovandosg/app-php`
    - Verifique no GitHub se o nome está correto (case-sensitive)
 
 2. **Branch está correta?**
@@ -181,6 +218,16 @@ git push origin main
    - Verifique se você está fazendo push na branch `main`
 
 3. **ARN do OIDC Provider está correto?**
+   - Execute: `aws iam list-open-id-connect-providers`
+   - O ARN deve ser: `arn:aws:iam::975050217683:oidc-provider/token.actions.githubusercontent.com`
+
+4. **Aguarde alguns segundos**
+   - Às vezes leva 10-30 segundos para as permissões propagarem
+
+5. **Verifique os logs do GitHub Actions**
+   - Vá no repositório > Actions > Clique no workflow que falhou
+   - Expanda o step "Configure AWS Credentials"
+   - Procure por mensagens de erro mais detalhadas
    - Execute: `aws iam list-open-id-connect-providers`
    - O ARN deve ser: `arn:aws:iam::975050217683:oidc-provider/token.actions.githubusercontent.com`
 
@@ -234,6 +281,19 @@ cat > trust-policy.json << 'EOF'
           "token.actions.githubusercontent.com:aud": "sts.amazonaws.com"
         },
         "StringLike": {
+          "token.actions.githubusercontent.com:sub": "repo:Jovandosg/app-php:ref:refs/heads/main"
+        }
+      }
+    }
+  ]
+}
+EOF
+
+aws iam update-assume-role-policy \
+  --role-name GitHubActionRepoApp \
+  --policy-document file://trust-policy.json
+
+# 3. Continuar com o resto do comando...
           "token.actions.githubusercontent.com:sub": "repo:Jovandosg/devops-test-project:ref:refs/heads/main"
         }
       }

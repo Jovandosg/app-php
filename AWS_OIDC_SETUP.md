@@ -42,7 +42,7 @@ Acesse a role `GitHubActionRepoApp` no IAM:
           "token.actions.githubusercontent.com:aud": "sts.amazonaws.com"
         },
         "StringLike": {
-          "token.actions.githubusercontent.com:sub": "repo:Jovandosg/devops-test-project:ref:refs/heads/main"
+          "token.actions.githubusercontent.com:sub": "repo:Jovandosg/app-php:ref:refs/heads/main"
         }
       }
     }
@@ -116,7 +116,7 @@ cat > trust-policy.json << 'EOF'
           "token.actions.githubusercontent.com:aud": "sts.amazonaws.com"
         },
         "StringLike": {
-          "token.actions.githubusercontent.com:sub": "repo:Jovandosg/devops-test-project:ref:refs/heads/main"
+          "token.actions.githubusercontent.com:sub": "repo:Jovandosg/app-php:ref:refs/heads/main"
         }
       }
     }

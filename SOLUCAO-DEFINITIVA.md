@@ -51,7 +51,7 @@ O comando CLI não atualizou a Trust Policy corretamente. Vamos fazer via Consol
           "token.actions.githubusercontent.com:aud": "sts.amazonaws.com"
         },
         "StringLike": {
-          "token.actions.githubusercontent.com:sub": "repo:Jovandosg/devops-test-project:ref:refs/heads/main"
+          "token.actions.githubusercontent.com:sub": "repo:Jovandosg/app-php:ref:refs/heads/main"
         }
       }
     }
@@ -151,6 +151,24 @@ Antes de testar, confirme:
    - Confirme o nome exato do repositório
    - Pode ser que seja `devops-test-project` ou outro nome
 
+2. **Checklist de Verificação**
+   Antes de testar, confirme:
+
+   - [ ] OIDC Provider existe com URL `token.actions.githubusercontent.com`
+   - [ ] OIDC Provider tem audience `sts.amazonaws.com`
+   - [ ] Trust Policy da role foi SUBSTITUÍDA (não apenas editada)
+   - [ ] Trust Policy contém `repo:Jovandosg/app-php:ref:refs/heads/main`
+   - [ ] Role tem permissões ECR (inline policy ou managed policy)
+   - [ ] Repositório ECR `devops` existe na região `us-east-1`
+   - [ ] Você está fazendo push na branch `main`
+
+### Se AINDA der erro:
+
+1. **Verifique o nome EXATO do repositório no GitHub:**
+   - Vá em: https://github.com/Jovandosg/app-php
+   - Confirme o nome exato do repositório
+   - O nome correto é: `app-php`
+
 2. **Verifique se o repositório é público ou privado:**
    - Se for privado, pode precisar de configurações adicionais
 
@@ -162,14 +180,6 @@ Antes de testar, confirme:
    - IAM > Identity providers
    - Clique no provider do GitHub
    - Copie o ARN e confirme se é: `arn:aws:iam::975050217683:oidc-provider/token.actions.githubusercontent.com`
-
----
-
-## 📸 Preciso Ver
-
-Se ainda não funcionar, me envie prints de:
-
-1. **IAM > Identity providers** (mostrando o provider do GitHub)
 2. **IAM > Roles > GitHubActionRepoApp > Trust relationships** (mostrando a policy completa)
 3. **IAM > Roles > GitHubActionRepoApp > Permissions** (mostrando as policies anexadas)
 4. **GitHub > Seu repositório > Settings > Actions > General** (mostrando as configurações de workflow)
