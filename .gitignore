@@ -1,0 +1,5 @@
+# .gitignore
+/vendor/
+/logs/
+.env
+echo "*.log" >> .gitignore

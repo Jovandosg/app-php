@@ -1,0 +1,46 @@
+{
+    "name": "devops-test/platform",
+    "description": "Uma aplicação web PHP para demonstrar práticas DevOps modernas",
+    "version": "2.1.3",
+    "type": "project",
+    "keywords": ["php", "devops", "docker", "ci-cd", "containerization"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "DevOps Team",
+            "email": "devops@platform.com"
+        }
+    ],
+    "require": {
+        "php": ">=8.0",
+        "ext-json": "*",
+        "ext-mbstring": "*"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^10.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "DevOpsPlatform\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "DevOpsPlatform\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "phpunit",
+        "check-syntax": "find . -name '*.php' -exec php -l {} \\;",
+        "security-check": "composer audit",
+        "post-install-cmd": [
+            "@php -r \"if (!file_exists('logs')) { mkdir('logs', 0755, true); }\""
+        ]
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "prefer-stable": true,
+        "sort-packages": true
+    },
+    "minimum-stability": "stable"
+}

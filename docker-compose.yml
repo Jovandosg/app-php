@@ -1,0 +1,76 @@
+# ==============================================================================
+# Docker Compose - Desenvolvimento Local
+# ==============================================================================
+# Este arquivo facilita o desenvolvimento local e testes da aplicação
+# Uso: docker-compose up -d
+# ==============================================================================
+
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: devops-platform-app
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health?simple"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    environment:
+      - APP_ENV=development
+      - LOG_LEVEL=DEBUG
+    volumes:
+      # Monta logs para facilitar debugging
+      - ./logs:/var/www/html/logs
+    networks:
+      - devops-network
+
+  # Serviço opcional para desenvolvimento com hot-reload
+  app-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder  # Usa apenas o stage de build para desenvolvimento
+    container_name: devops-platform-dev
+    profiles:
+      - dev  # Ativo apenas com: docker-compose --profile dev up
+    ports:
+      - "8081:8080"
+    volumes:
+      # Monta código fonte para hot-reload
+      - .:/var/www/html
+      - /var/www/html/vendor  # Exclui vendor do mount
+    environment:
+      - APP_ENV=development
+      - LOG_LEVEL=DEBUG
+    networks:
+      - devops-network
+
+networks:
+  devops-network:
+    driver: bridge
+
+# ==============================================================================
+# Comandos úteis:
+#
+# Produção (imagem otimizada):
+#   docker-compose up -d
+#
+# Desenvolvimento (com hot-reload):
+#   docker-compose --profile dev up -d app-dev
+#
+# Logs:
+#   docker-compose logs -f app
+#
+# Health check:
+#   curl http://localhost:8080/health
+#
+# Parar serviços:
+#   docker-compose down
+# ==============================================================================

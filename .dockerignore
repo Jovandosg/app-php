@@ -1,0 +1,92 @@
+# ==============================================================================
+# .dockerignore - Otimização do contexto de build do Docker
+# ==============================================================================
+# Este arquivo exclui arquivos desnecessários do contexto de build,
+# reduzindo o tamanho e tempo de build da imagem Docker
+# ==============================================================================
+
+# Controle de versão
+.git/
+.gitignore
+.gitattributes
+.github/
+
+# Documentação e metadados
+README.md
+LICENSE
+CHANGELOG.md
+*.md
+
+# Arquivos temporários e logs
+logs/
+*.log
+.tmp/
+tmp/
+
+# Cache e dependências de desenvolvimento
+.cache/
+node_modules/
+.npm/
+.yarn-integrity
+yarn-error.log
+
+# IDEs e editores
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Arquivos de configuração local
+.env.local
+.env.*.local
+docker-compose*.yml
+Dockerfile*
+
+# Tests e coverage
+tests/
+coverage/
+.phpunit.result.cache
+phpunit.xml
+.coverage/
+
+# Build artifacts
+build/
+dist/
+.build/
+
+# OS específicos
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Backup files
+*.bak
+*.backup
+*.old
+
+# Arquivos de exemplo e demo
+examples/
+demo/
+samples/
+
+# Configurações do Composer para desenvolvimento
+composer.phar
+/vendor/bin/
+/vendor/composer/
+
+# Arquivos de configuração de ferramentas
+.eslintrc*
+.prettierrc*
+.editorconfig
+.stylelintrc*
+phpcs.xml
+phpmd.xml
+.php_cs
+.php-cs-fixer.*
