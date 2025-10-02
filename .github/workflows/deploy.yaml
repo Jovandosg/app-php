@@ -5,38 +5,7 @@ on:
     branches:
       - main
 
-permissions:
-  id-token: write
-  contents: read
 
-jobs:
-  build_ecr:
-    name: build_ecr
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-  deploy_ec2:
-    name: deploy_ec2
-    needs: build_ecr
-    env:
-      INSTANCE_KEY: ${{ secrets.INSTANCE_KEY }}
-      PUBLIC_IP: ${{ secrets.PUBLIC_IP }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Show deployment variables
-        run: |
-          echo "Public IP: $PUBLIC_IP"
-          echo "Key length: $(echo -n \"$INSTANCE_KEY\" | wc -c)"
-
-      - name: Debug deployment variables
-        run: |
-          echo "Public IP: $PUBLIC_IP"
-          echo "Key length: $(echo -n \"$INSTANCE_KEY\" | wc -c)"
-          ssh -o BatchMode=yes -o ConnectTimeout=5 -o StrictHostKeyChecking=no -i bia.pem ec2-user@$PUBLIC_IP echo 'SSH connection test'
-
-      - name: Deploy EC2 ssh
         run: |
           echo "$INSTANCE_KEY" > bia.pem
           chmod 400 bia.pem
