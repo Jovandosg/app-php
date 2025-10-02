@@ -37,9 +37,15 @@ jobs:
     needs: build_ecr
     env:
       INSTANCE_KEY: ${{ secrets.INSTANCE_KEY }}
+      INSTANCE_KEY: ${{ secrets.INSTANCE_KEY }}
       PUBLIC_IP: ${{ secrets.PUBLIC_IP }}
     runs-on: ubuntu-latest
     steps:
+      - name: Create SSH key file
+        run: |
+          echo "$INSTANCE_KEY" > bia.pem
+          chmod 600 bia.pem
+
       - name: Show deployment variables
         run: |
           echo "Public IP: $PUBLIC_IP"
@@ -53,8 +59,6 @@ jobs:
 
       - name: Deploy EC2 ssh
         run: |
-          echo "$INSTANCE_KEY" > bia.pem
-          chmod 600 bia.pem
           ssh -i bia.pem -o StrictHostKeyChecking=no ec2-user@$PUBLIC_IP << EOF
             aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 975050217683.dkr.ecr.us-east-1.amazonaws.com
             docker pull 975050217683.dkr.ecr.us-east-1.amazonaws.com/devops:v1.0.0
