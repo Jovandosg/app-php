@@ -53,7 +53,7 @@ jobs:
         run: |
           echo "$INSTANCE_KEY" > bia.pem
           chmod 600 bia.pem
-          ssh -i bia.pem -o StrictHostKeyChecking=no ec2_user@$PUBLIC_IP << EOF
+          ssh -i bia.pem -o StrictHostKeyChecking=no ec2-user@$PUBLIC_IP << EOF
             aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 975050217683.dkr.ecr.us-east-1.amazonaws.com
             docker pull 975050217683.dkr.ecr.us-east-1.amazonaws.com/devops:v1.0.0
             docker run -d -p 80:80 --name site 975050217683.dkr.ecr.us-east-1.amazonaws.com/devops:v1.0.0 || docker restart site
