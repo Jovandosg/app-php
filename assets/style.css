@@ -19,8 +19,9 @@ body {
 }
 
 /* Alteração para teste no deploy: mudar a cor do botão para vermelho */
+/* Alteração para teste no deploy: mudar a cor do botão para roxo */
 button {
-    background-color: #FF0000 !important; /* vermelho */
+    background-color: #800080 !important; /* roxo */
     color: white;
     padding: 10px 20px;
     border: none;
@@ -29,7 +30,7 @@ button {
 }
 
 button:hover {
-    background-color: #cc0000;
+    background-color: #660066;
 }
 }
 
